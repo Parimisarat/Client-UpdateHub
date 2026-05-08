@@ -172,7 +172,7 @@ p { color: var(--text-secondary); line-height: 1.6; }
 }
 
 .client-card.on-track:hover { border-color: var(--status-on-track); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(16, 185, 129, 0.2); }
-.client-card.waiting:hover { border-color: var(--status-waiting); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(245, 158, 11, 0.2); }
+.client-card.at-risk:hover { border-color: var(--status-waiting); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(245, 158, 11, 0.2); }
 .client-card.blocked:hover { border-color: var(--status-blocked); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(239, 68, 68, 0.2); }
 
 .client-card::before {
@@ -230,7 +230,7 @@ p { color: var(--text-secondary); line-height: 1.6; }
 }
 
 .status-on-track { background: var(--status-on-track-bg); color: var(--status-on-track); border: 1px solid rgba(16, 185, 129, 0.2); }
-.status-waiting { background: var(--status-waiting-bg); color: var(--status-waiting); border: 1px solid rgba(245, 158, 11, 0.2); }
+.status-at-risk { background: var(--status-waiting-bg); color: var(--status-waiting); border: 1px solid rgba(245, 158, 11, 0.2); }
 .status-blocked { background: var(--status-blocked-bg); color: var(--status-blocked); border: 1px solid rgba(239, 68, 68, 0.2); }
 
 /* Pulsing Status Dot */
@@ -263,7 +263,7 @@ p { color: var(--text-secondary); line-height: 1.6; }
 }
 
 .dot-on-track { background-color: var(--status-on-track); box-shadow: 0 0 10px var(--status-on-track); }
-.dot-waiting { background-color: var(--status-waiting); box-shadow: 0 0 10px var(--status-waiting); }
+.dot-at-risk { background-color: var(--status-waiting); box-shadow: 0 0 10px var(--status-waiting); }
 .dot-blocked { background-color: var(--status-blocked); box-shadow: 0 0 10px var(--status-blocked); }
 
 /* Timeline */

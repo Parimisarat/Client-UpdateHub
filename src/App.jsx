@@ -159,7 +159,7 @@ function App() {
               </div>
               <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden', display: 'flex' }}>
                 <div style={{ width: `${(stats.active / (stats.total || 1)) * 100}%`, background: 'var(--status-on-track)' }}></div>
-                <div style={{ width: `${((stats.total - stats.active - stats.blocked) / (stats.total || 1)) * 100}%`, background: 'var(--status-waiting)' }}></div>
+                <div style={{ width: `${((stats.total - stats.active - stats.blocked) / (stats.total || 1)) * 100}%`, background: 'var(--status-at-risk)' }}></div>
                 <div style={{ width: `${(stats.blocked / (stats.total || 1)) * 100}%`, background: 'var(--status-blocked)' }}></div>
               </div>
             </div>

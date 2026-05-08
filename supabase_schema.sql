@@ -9,7 +9,7 @@ CREATE TABLE clients (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
-    status TEXT DEFAULT 'on-track' CHECK (status IN ('on-track', 'waiting', 'blocked')),
+    status TEXT DEFAULT 'on-track' CHECK (status IN ('on-track', 'at-risk', 'blocked')),
     deadline DATE,
     links JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL

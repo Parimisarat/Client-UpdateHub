@@ -22,7 +22,7 @@ CREATE TABLE issues (
     title TEXT NOT NULL,
     description TEXT,
     status TEXT DEFAULT 'open' CHECK (status IN ('open', 'in-progress', 'closed')),
-    priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
+    priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
     assigned_to TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );

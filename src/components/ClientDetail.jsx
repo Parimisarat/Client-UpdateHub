@@ -6,7 +6,7 @@ import AddUpdateModal from './AddUpdateModal';
 import AddIssueModal from './AddIssueModal';
 import AddTeamMemberModal from './AddTeamMemberModal';
 import EditProjectModal from './EditProjectModal';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { Edit2, ExternalLink, FileText, Layout, Share2 } from 'lucide-react';
 
 export default function ClientDetail({ user, onRefresh, showToast }) {
@@ -249,7 +249,7 @@ export default function ClientDetail({ user, onRefresh, showToast }) {
                         {item.title ? `New Issue: ${item.title}` : `Status: ${item.update_text.substring(0, 30)}...`}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.6 }}>
-                        {format(new Date(item.created_at), 'MMM d, h:mm a')}
+                        {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                       </div>
                     </div>
                   </div>
@@ -282,7 +282,9 @@ export default function ClientDetail({ user, onRefresh, showToast }) {
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '0.95rem', fontWeight: '600' }}>{member.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{member.role || 'Contributor'}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          {member.role || 'Contributor'} • {member.email || 'No email'}
+                        </div>
                       </div>
                       {user.role === 'admin' && (
                         <button 
@@ -363,7 +365,7 @@ export default function ClientDetail({ user, onRefresh, showToast }) {
                       <User size={14} /> {update.responsible_person || 'Anonymous'}
                     </span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Clock size={14} /> {format(new Date(update.created_at), 'MMM d, yyyy • h:mm a')}
+                      <Clock size={14} /> {formatDistanceToNow(new Date(update.created_at), { addSuffix: true })}
                     </span>
                     {user.role === 'admin' && (
                       <button 

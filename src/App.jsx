@@ -7,6 +7,7 @@ import AddClientModal from './components/AddClientModal';
 import Login from './components/Login';
 import CalendarView from './components/CalendarView';
 import { LogOut } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -91,7 +92,10 @@ function App() {
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>{user.name}</div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Status: Online</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span className="pulse-dot dot-on-track" style={{ width: '6px', height: '6px', margin: 0 }}></span>
+                Online
+              </div>
             </div>
           </div>
 
@@ -106,18 +110,51 @@ function App() {
             </div>
 
             <div className="sidebar-section" style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h4 className="sidebar-title" style={{ margin: 0 }}>System Health</h4>
-                <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>LIVE</div>
-              </div>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem' }}>
-                <div style={{ flex: 1, textAlign: 'center', padding: '0.5rem', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--status-on-track)' }}>{stats.active}</div>
-                  <div style={{ fontSize: '0.5rem', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Track</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <h4 className="sidebar-title" style={{ margin: 0, color: 'var(--text-primary)', opacity: 0.8 }}>System Health</h4>
+                <div style={{ 
+                  fontSize: '0.6rem', 
+                  color: 'var(--status-on-track)', 
+                  background: 'rgba(16, 185, 129, 0.15)', 
+                  padding: '4px 10px', 
+                  borderRadius: '6px', 
+                  fontWeight: '900', 
+                  letterSpacing: '0.1em',
+                  boxShadow: '0 0 15px rgba(16, 185, 129, 0.3)',
+                  textShadow: '0 0 8px rgba(16, 185, 129, 0.6)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  border: '1px solid rgba(16, 185, 129, 0.3)'
+                }}>
+                  <span className="pulse-dot dot-on-track" style={{ width: '4px', height: '4px', margin: 0 }}></span>
+                  LIVE
                 </div>
-                <div style={{ flex: 1, textAlign: 'center', padding: '0.5rem', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--status-blocked)' }}>{stats.blocked}</div>
-                  <div style={{ fontSize: '0.5rem', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Blocked</div>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '1.25rem' }}>
+                <div style={{ 
+                  flex: 1, 
+                  textAlign: 'center', 
+                  padding: '0.75rem 0.5rem', 
+                  background: 'rgba(16, 185, 129, 0.08)', 
+                  borderRadius: '12px', 
+                  border: '1px solid rgba(16, 185, 129, 0.2)',
+                  boxShadow: '0 0 15px rgba(16, 185, 129, 0.15)'
+                }}>
+                  <div style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--status-on-track)', textShadow: '0 0 10px rgba(16, 185, 129, 0.5)' }}>{stats.active}</div>
+                  <div style={{ fontSize: '0.55rem', textTransform: 'uppercase', color: 'var(--status-on-track)', fontWeight: '700', opacity: 0.8 }}>Track</div>
+                </div>
+                <div style={{ 
+                  flex: 1, 
+                  textAlign: 'center', 
+                  padding: '0.75rem 0.5rem', 
+                  background: 'rgba(239, 68, 68, 0.08)', 
+                  borderRadius: '12px', 
+                  border: '1px solid rgba(239, 68, 68, 0.2)',
+                  boxShadow: '0 0 15px rgba(239, 68, 68, 0.15)'
+                }}>
+                  <div style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--status-blocked)', textShadow: '0 0 10px rgba(239, 68, 68, 0.5)' }}>{stats.blocked}</div>
+                  <div style={{ fontSize: '0.55rem', textTransform: 'uppercase', color: 'var(--status-blocked)', fontWeight: '700', opacity: 0.8 }}>Blocked</div>
                 </div>
               </div>
               <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden', display: 'flex' }}>
@@ -275,10 +312,24 @@ function Dashboard({ user, onRefresh, refreshKey, showToast }) {
               user={user} 
               onRefresh={fetchClients} 
               showToast={showToast} 
+              onDelete={deleteClient}
             />
           ))}
           {filteredClients.length === 0 && !loading && (
-            <p>No projects found. Create one to get started!</p>
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '8rem 2rem', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'rgba(56, 189, 248, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
+                <Briefcase size={32} color="var(--accent-color)" />
+              </div>
+              <h2 style={{ fontSize: '1.75rem', marginBottom: '0.75rem' }}>No projects found</h2>
+              <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto 2rem' }}>
+                {search ? `We couldn't find any projects matching "${search}".` : "Get started by creating your first project to track updates and issues."}
+              </p>
+              {!search && (
+                <button onClick={() => setShowAddModal(true)} className="btn btn-primary" style={{ padding: '0.8rem 2rem' }}>
+                  <Plus size={18} /> Create First Project
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -286,7 +337,7 @@ function Dashboard({ user, onRefresh, refreshKey, showToast }) {
   );
 }
 
-function ClientCard({ client, user, onRefresh, showToast }) {
+function ClientCard({ client, user, onRefresh, showToast, onDelete }) {
   const navigate = useNavigate();
   
   const sortedUpdates = [...(client.updates || [])].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -295,6 +346,8 @@ function ClientCard({ client, user, onRefresh, showToast }) {
   const openIssues = issues.filter(i => i.status !== 'closed');
   const closedIssues = issues.filter(i => i.status === 'closed').length;
   const progress = issues.length > 0 ? Math.round((closedIssues / issues.length) * 100) : 100;
+  
+  const timeAgo = latestUpdate ? formatDistanceToNow(new Date(latestUpdate.created_at), { addSuffix: true }) : '';
 
   return (
     <div className={`client-card ${client.status}`} onClick={() => navigate(`/client/${client.id}`)}>
@@ -313,7 +366,7 @@ function ClientCard({ client, user, onRefresh, showToast }) {
             </span>
             {user.role === 'admin' && (
               <button 
-                onClick={(e) => deleteClient(e, client.id)}
+                onClick={(e) => onDelete(e, client.id)}
                 style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', opacity: 0.3 }}
                 onMouseEnter={e => e.currentTarget.style.opacity = 1}
                 onMouseLeave={e => e.currentTarget.style.opacity = 0.3}
@@ -347,30 +400,26 @@ function ClientCard({ client, user, onRefresh, showToast }) {
         border: '1px solid rgba(255,255,255,0.03)'
       }}>
         {latestUpdate ? (
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <div style={{ padding: '6px', background: 'rgba(56, 189, 248, 0.1)', borderRadius: '6px', height: 'fit-content' }}>
-              <MessageSquare size={12} color="var(--accent-color)" />
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+              <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>Latest Activity</div>
+              <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', opacity: 0.5 }}>{timeAgo}</div>
             </div>
-            <div>
-              <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Latest Activity</div>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {latestUpdate.update_text}
-              </p>
-            </div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              {latestUpdate.update_text}
+            </p>
           </div>
         ) : (
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, textAlign: 'center', fontStyle: 'italic' }}>No activity yet.</p>
         )}
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: 0.6 }}>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <div style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <CheckCircle size={12} /> {openIssues.length} Issues
-          </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', opacity: 0.6 }}>
+        <div style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '4px 8px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+          <CheckCircle size={12} /> {openIssues.length} Open Issues
         </div>
-        <div style={{ fontSize: '0.7rem' }}>
-          <Calendar size={11} style={{ marginRight: '4px' }} />
+        <div style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '4px 8px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+          <Calendar size={12} />
           {client.deadline ? new Date(client.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'No deadline'}
         </div>
       </div>

@@ -7,7 +7,7 @@ import AddIssueModal from './AddIssueModal';
 import AddTeamMemberModal from './AddTeamMemberModal';
 import EditProjectModal from './EditProjectModal';
 import { format } from 'date-fns';
-import { Edit2 } from 'lucide-react';
+import { Edit2, ExternalLink, FileText, Layout, Share2 } from 'lucide-react';
 
 export default function ClientDetail({ user, onRefresh, showToast }) {
   const { id } = useParams();
@@ -300,18 +300,41 @@ export default function ClientDetail({ user, onRefresh, showToast }) {
           <div className="update-card" style={{ padding: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
               <h3 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Resource Hub</h3>
-              <MessageSquare size={16} color="var(--text-secondary)" />
+              <button 
+                onClick={() => setShowEditModal(true)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', opacity: 0.6, transition: 'opacity 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                onMouseLeave={e => e.currentTarget.style.opacity = 0.6}
+                title="Configure Resources"
+              >
+                <Edit2 size={16} />
+              </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <a href={client.links?.figma || "#"} target="_blank" rel="noopener noreferrer" className={`resource-link-premium ${!client.links?.figma ? 'disabled' : ''}`}>
-                <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(255, 114, 98, 0.1)', color: '#ff7262' }}><MessageSquare size={18} /></div> Figma Prototypes
+                <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(255, 114, 98, 0.1)', color: '#ff7262' }}><Layout size={18} /></div> Figma Prototypes
+                {!client.links?.figma && <span style={{ fontSize: '0.7rem', opacity: 0.5, marginLeft: 'auto' }}>Not Set</span>}
               </a>
               <a href={client.links?.staging || "#"} target="_blank" rel="noopener noreferrer" className={`resource-link-premium ${!client.links?.staging ? 'disabled' : ''}`}>
-                <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}><CheckCircle size={18} /></div> Staging Environment
+                <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}><ExternalLink size={18} /></div> Staging Environment
+                {!client.links?.staging && <span style={{ fontSize: '0.7rem', opacity: 0.5, marginLeft: 'auto' }}>Not Set</span>}
               </a>
               <a href={client.links?.docs || "#"} target="_blank" rel="noopener noreferrer" className={`resource-link-premium ${!client.links?.docs ? 'disabled' : ''}`}>
-                <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.1)', color: 'var(--accent-color)' }}><Clock size={18} /></div> Technical Docs
+                <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.1)', color: 'var(--accent-color)' }}><FileText size={18} /></div> Technical Docs
+                {!client.links?.docs && <span style={{ fontSize: '0.7rem', opacity: 0.5, marginLeft: 'auto' }}>Not Set</span>}
               </a>
+
+              {!client.links?.figma && !client.links?.staging && !client.links?.docs && (
+                <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                  <button 
+                    onClick={() => setShowEditModal(true)}
+                    className="btn btn-secondary" 
+                    style={{ fontSize: '0.8rem', padding: '0.5rem 1rem', width: '100%' }}
+                  >
+                    Add Links
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

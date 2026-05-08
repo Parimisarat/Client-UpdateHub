@@ -1,24 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, MessageSquare, CheckCircle, Clock, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, User, MessageSquare, CheckCircle, Clock, Plus, Trash2, Calendar } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AddUpdateModal from './AddUpdateModal';
 import AddIssueModal from './AddIssueModal';
+import AddTeamMemberModal from './AddTeamMemberModal';
+import EditProjectModal from './EditProjectModal';
 import { format } from 'date-fns';
+import { Edit2 } from 'lucide-react';
 
-export default function ClientDetail({ onRefresh }) {
+export default function ClientDetail({ user, onRefresh, showToast }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [client, setClient] = useState(null);
   const [updates, setUpdates] = useState([]);
   const [issues, setIssues] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'updates', or 'issues'
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showIssueModal, setShowIssueModal] = useState(false);
+  const [showTeamModal, setShowTeamModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     fetchClientData();
+
+    // Subscribe to project-specific real-time changes
+    const projectSub = supabase
+      .channel(`project:${id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'updates', filter: `client_id=eq.${id}` }, fetchClientData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'issues', filter: `client_id=eq.${id}` }, fetchClientData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'team_members', filter: `client_id=eq.${id}` }, fetchClientData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'clients', filter: `id=eq.${id}` }, fetchClientData)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(projectSub);
+    };
   }, [id]);
 
   async function fetchClientData() {
@@ -47,12 +66,19 @@ export default function ClientDetail({ onRefresh }) {
       .eq('client_id', id)
       .order('created_at', { ascending: false });
 
+    const { data: teamData, error: teamError } = await supabase
+      .from('team_members')
+      .select('*')
+      .eq('client_id', id);
+
     if (updatesError) console.error(updatesError);
     if (issuesError) console.error(issuesError);
+    if (teamError) console.error(teamError);
 
     setClient(clientData);
     setUpdates(updatesData || []);
     setIssues(issuesData || []);
+    setTeamMembers(teamData || []);
     setLoading(false);
     if (onRefresh) onRefresh();
   }
@@ -60,27 +86,47 @@ export default function ClientDetail({ onRefresh }) {
   async function deleteUpdate(id) {
     if (!window.confirm('Delete this update?')) return;
     const { error } = await supabase.from('updates').delete().eq('id', id);
-    if (error) alert('Error deleting update: ' + error.message);
-    else fetchClientData();
+    if (error) showToast('Error deleting update: ' + error.message, 'error');
+    else {
+      showToast('Update deleted');
+      fetchClientData();
+    }
   }
 
   async function deleteIssue(id) {
     if (!window.confirm('Delete this issue?')) return;
     const { error } = await supabase.from('issues').delete().eq('id', id);
-    if (error) alert('Error deleting issue: ' + error.message);
-    else fetchClientData();
+    if (error) showToast('Error deleting issue: ' + error.message, 'error');
+    else {
+      showToast('Issue deleted');
+      fetchClientData();
+    }
   }
 
   async function updateIssueStatus(id, newStatus) {
     const { error } = await supabase.from('issues').update({ status: newStatus }).eq('id', id);
-    if (error) alert('Error updating status: ' + error.message);
-    else fetchClientData();
+    if (error) showToast('Error updating status: ' + error.message, 'error');
+    else {
+      showToast('Status updated to ' + newStatus);
+      fetchClientData();
+    }
+  }
+
+  async function deleteTeamMember(id) {
+    if (!window.confirm('Remove this team member?')) return;
+    const { error } = await supabase.from('team_members').delete().eq('id', id);
+    if (error) showToast('Error removing member: ' + error.message, 'error');
+    else {
+      showToast('Team member removed');
+      fetchClientData();
+    }
   }
 
   if (loading) return <p>Loading project details...</p>;
 
   return (
-    <div className="fade-in">
+    <>
+      <div className="fade-in">
       <button onClick={() => navigate('/')} className="btn btn-secondary" style={{ marginBottom: '2rem' }}>
         <ArrowLeft size={18} /> Back to Dashboard
       </button>
@@ -107,6 +153,13 @@ export default function ClientDetail({ onRefresh }) {
             <span className={`status-tag status-${client.status}`} style={{ fontSize: '0.75rem', padding: '0.4rem 1rem', borderRadius: '30px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               {client.status?.replace('-', ' ')}
             </span>
+            <button 
+              onClick={() => setShowEditModal(true)}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.4rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Edit Project Details"
+            >
+              <Edit2 size={16} />
+            </button>
           </div>
           <p style={{ fontSize: '1.15rem', color: 'var(--text-secondary)', maxWidth: '600px', lineHeight: '1.6', margin: 0 }}>
             {client.description}
@@ -116,6 +169,13 @@ export default function ClientDetail({ onRefresh }) {
             <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{ padding: '0.5rem 1rem', background: 'rgba(56, 189, 248, 0.1)', borderRadius: '8px', color: 'var(--accent-color)', fontSize: '0.75rem', fontWeight: '800' }}>NEXT STEP</div>
               <div style={{ fontSize: '1.1rem', fontWeight: '500' }}>{updates[0].next_action}</div>
+            </div>
+          )}
+
+          {client.deadline && (
+            <div style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)' }}>
+              <Calendar size={16} />
+              <span style={{ fontSize: '0.95rem' }}>Deadline: <strong style={{ color: 'var(--accent-color)' }}>{format(new Date(client.deadline), 'MMMM d, yyyy')}</strong></span>
             </div>
           )}
         </div>
@@ -155,6 +215,7 @@ export default function ClientDetail({ onRefresh }) {
         <button 
           onClick={() => activeTab === 'issues' ? setShowIssueModal(true) : setShowUpdateModal(true)} 
           className="btn btn-primary"
+          disabled={(user.role || 'admin') !== 'admin' && activeTab === 'issues'}
         >
           <Plus size={18} /> Add {activeTab === 'issues' ? 'Issue' : 'Update'}
         </button>
@@ -195,24 +256,43 @@ export default function ClientDetail({ onRefresh }) {
           <div className="update-card" style={{ padding: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
               <h3 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Project Team</h3>
-              <User size={16} color="var(--text-secondary)" />
+              <button 
+                onClick={() => setShowTeamModal(true)}
+                style={{ background: 'none', border: 'none', color: 'var(--accent-color)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              >
+                <Plus size={16} />
+              </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {[
-                { name: 'Karthik C', role: 'Lead Developer', color: '#38bdf8' },
-                { name: 'Admin User', role: 'Project Manager', color: '#10b981' },
-                { name: 'Sarah Lopez', role: 'UX Designer', color: '#ff7262' }
-              ].map((member, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: member.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', color: 'white' }}>
-                    {member.name.split(' ').map(n => n[0]).join('')}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: '600' }}>{member.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{member.role}</div>
-                  </div>
-                </div>
-              ))}
+              {teamMembers.length === 0 ? (
+                <p style={{ fontSize: '0.85rem', textAlign: 'center', opacity: 0.5 }}>No team members added yet.</p>
+              ) : (
+                teamMembers.map((member, i) => {
+                  const colors = ['#38bdf8', '#10b981', '#ff7262', '#f59e0b', '#8b5cf6'];
+                  const color = colors[i % colors.length];
+                  return (
+                    <div key={member.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', color: 'white', flexShrink: 0 }}>
+                        {member.name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '0.95rem', fontWeight: '600' }}>{member.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{member.role || 'Contributor'}</div>
+                      </div>
+                      {user.role === 'admin' && (
+                        <button 
+                          onClick={() => deleteTeamMember(member.id)}
+                          style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', opacity: 0.3 }}
+                          onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                          onMouseLeave={e => e.currentTarget.style.opacity = 0.3}
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -223,13 +303,13 @@ export default function ClientDetail({ onRefresh }) {
               <MessageSquare size={16} color="var(--text-secondary)" />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <a href={client.links?.figma || "https://figma.com"} target="_blank" rel="noopener noreferrer" className="resource-link-premium">
+              <a href={client.links?.figma || "#"} target="_blank" rel="noopener noreferrer" className={`resource-link-premium ${!client.links?.figma ? 'disabled' : ''}`}>
                 <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(255, 114, 98, 0.1)', color: '#ff7262' }}><MessageSquare size={18} /></div> Figma Prototypes
               </a>
-              <a href={client.links?.staging || "https://google.com"} target="_blank" rel="noopener noreferrer" className="resource-link-premium">
+              <a href={client.links?.staging || "#"} target="_blank" rel="noopener noreferrer" className={`resource-link-premium ${!client.links?.staging ? 'disabled' : ''}`}>
                 <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}><CheckCircle size={18} /></div> Staging Environment
               </a>
-              <a href={client.links?.docs || "https://notion.so"} target="_blank" rel="noopener noreferrer" className="resource-link-premium">
+              <a href={client.links?.docs || "#"} target="_blank" rel="noopener noreferrer" className={`resource-link-premium ${!client.links?.docs ? 'disabled' : ''}`}>
                 <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.1)', color: 'var(--accent-color)' }}><Clock size={18} /></div> Technical Docs
               </a>
             </div>
@@ -252,12 +332,14 @@ export default function ClientDetail({ onRefresh }) {
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <Clock size={14} /> {format(new Date(update.created_at), 'MMM d, yyyy • h:mm a')}
                     </span>
-                    <button 
-                      onClick={() => deleteUpdate(update.id)}
-                      style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', marginLeft: 'auto' }}
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    {user.role === 'admin' && (
+                      <button 
+                        onClick={() => deleteUpdate(update.id)}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', marginLeft: 'auto' }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </div>
                   
                   <h3 style={{ marginBottom: '1rem', color: 'var(--accent-color)' }}>
@@ -319,12 +401,14 @@ export default function ClientDetail({ onRefresh }) {
                       <option value="in-progress">In Progress</option>
                       <option value="closed">Closed</option>
                     </select>
-                    <button 
-                      onClick={() => deleteIssue(issue.id)}
-                      style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {user.role === 'admin' && (
+                      <button 
+                        onClick={() => deleteIssue(issue.id)}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </div>
                 <p style={{ fontSize: '0.95rem', margin: '0.5rem 0' }}>{issue.description}</p>
@@ -344,7 +428,11 @@ export default function ClientDetail({ onRefresh }) {
           clientId={id} 
           issues={issues}
           onClose={() => setShowUpdateModal(false)} 
-          onAdded={fetchClientData} 
+          onAdded={() => {
+            showToast('Update posted');
+            fetchClientData();
+          }} 
+          showToast={showToast}
         />
       )}
 
@@ -352,9 +440,38 @@ export default function ClientDetail({ onRefresh }) {
         <AddIssueModal 
           clientId={id} 
           onClose={() => setShowIssueModal(false)} 
-          onAdded={fetchClientData} 
+          onAdded={() => {
+            showToast('Issue tracked');
+            fetchClientData();
+          }} 
+          showToast={showToast}
         />
       )}
-    </div>
+
+      {showTeamModal && (
+        <AddTeamMemberModal 
+          clientId={id} 
+          onClose={() => setShowTeamModal(false)} 
+          onAdded={() => {
+            showToast('Team member added');
+            fetchClientData();
+          }} 
+          showToast={showToast}
+        />
+      )}
+
+      {showEditModal && (
+        <EditProjectModal 
+          client={client}
+          onClose={() => setShowEditModal(false)} 
+          onUpdated={() => {
+            showToast('Project updated');
+            fetchClientData();
+          }} 
+          showToast={showToast}
+        />
+      )}
+      </div>
+    </>
   );
 }

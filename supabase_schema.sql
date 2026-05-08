@@ -1,4 +1,5 @@
 -- Clean up existing tables to apply new schema
+DROP TABLE IF EXISTS team_members CASCADE;
 DROP TABLE IF EXISTS issues CASCADE;
 DROP TABLE IF EXISTS updates CASCADE;
 DROP TABLE IF EXISTS clients CASCADE;
@@ -9,6 +10,8 @@ CREATE TABLE clients (
     name TEXT NOT NULL,
     description TEXT,
     status TEXT DEFAULT 'on-track' CHECK (status IN ('on-track', 'waiting', 'blocked')),
+    deadline DATE,
+    links JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -45,6 +48,7 @@ ALTER TABLE issues ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access for clients" ON clients FOR SELECT USING (true);
 CREATE POLICY "Allow public insert access for clients" ON clients FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public delete access for clients" ON clients FOR DELETE USING (true);
+CREATE POLICY "Allow public update access for clients" ON clients FOR UPDATE USING (true);
 
 CREATE POLICY "Allow public read access for updates" ON updates FOR SELECT USING (true);
 CREATE POLICY "Allow public insert access for updates" ON updates FOR INSERT WITH CHECK (true);
@@ -54,3 +58,19 @@ CREATE POLICY "Allow public read access for issues" ON issues FOR SELECT USING (
 CREATE POLICY "Allow public insert access for issues" ON issues FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public delete access for issues" ON issues FOR DELETE USING (true);
 CREATE POLICY "Allow public update access for issues" ON issues FOR UPDATE USING (true);
+
+-- Create team_members table
+CREATE TABLE team_members (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    client_id UUID REFERENCES clients(id) ON DELETE CASCADE NOT NULL,
+    name TEXT NOT NULL,
+    role TEXT,
+    email TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS for team_members
+ALTER TABLE team_members ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read access for team_members" ON team_members FOR SELECT USING (true);
+CREATE POLICY "Allow public insert access for team_members" ON team_members FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public delete access for team_members" ON team_members FOR DELETE USING (true);

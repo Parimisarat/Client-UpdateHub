@@ -12,6 +12,7 @@
   --success: #0ea5e9;
   --glass-bg: rgba(15, 23, 42, 0.8);
   --font-family: 'Inter', sans-serif;
+  color-scheme: dark;
 }
 
 
@@ -52,6 +53,7 @@ body {
   position: sticky;
   top: 0;
   box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+  z-index: 100;
 }
 
 .main-content {
@@ -88,9 +90,17 @@ p { color: var(--text-secondary); line-height: 1.6; }
   box-shadow: 0 4px 15px var(--accent-glow);
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
   filter: brightness(1.1);
+}
+
+.btn-primary:disabled {
+  background-color: #1e293b;
+  color: var(--text-secondary);
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .new-project-btn {
@@ -148,9 +158,9 @@ p { color: var(--text-secondary); line-height: 1.6; }
 }
 
 .client-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-8px) scale(1.01);
   border-color: var(--accent-color);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px var(--accent-glow);
 }
 
 .client-card::before {
@@ -163,12 +173,6 @@ p { color: var(--text-secondary); line-height: 1.6; }
   background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
   transform: translateX(-100%);
   transition: transform 0.5s;
-}
-
-.client-card:hover {
-  border-color: rgba(56, 189, 248, 0.4);
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px var(--accent-glow);
 }
 
 .client-card:hover::before {
@@ -291,23 +295,26 @@ p { color: var(--text-secondary); line-height: 1.6; }
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(6px);
+  background: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(8px);
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 2000;
-  padding: 20px;
+  align-items: flex-start;
+  z-index: 9999;
+  padding: 60px 20px;
+  overflow-y: auto;
 }
 
 .modal-content {
-  background: var(--sidebar-bg);
+  background: #0f172a; /* Solid background for modal */
   border: 1px solid var(--border-color);
   border-radius: 20px;
   width: 100%;
-  max-width: 500px;
-  padding: 2rem;
-  animation: modalIn 0.3s ease-out;
+  max-width: 550px;
+  padding: 2.5rem;
+  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes modalIn {
@@ -551,3 +558,18 @@ p { color: var(--text-secondary); line-height: 1.6; }
 .dot-track { background: #10b981; }
 .dot-risk { background: #f59e0b; }
 .dot-blocked { background: #ef4444; }
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+.resource-link-premium.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: grayscale(1);
+}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-export default function AddUpdateModal({ clientId, issues, onClose, onAdded }) {
+export default function AddUpdateModal({ clientId, issues, onClose, onAdded, showToast }) {
   const [formData, setFormData] = useState({
     update_text: '',
     meeting_notes: '',
@@ -26,7 +26,8 @@ export default function AddUpdateModal({ clientId, issues, onClose, onAdded }) {
       }]);
 
     if (error) {
-      alert('Error adding update: ' + error.message);
+      if (showToast) showToast('Error adding update: ' + error.message, 'error');
+      else alert('Error adding update: ' + error.message);
       setLoading(false);
     } else {
       onAdded();
@@ -51,9 +52,9 @@ export default function AddUpdateModal({ clientId, issues, onClose, onAdded }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label style={{ fontSize: '0.85rem', marginBottom: '0.5rem', display: 'block', opacity: 0.8 }}>Update Status / Key Message *</label>
+            <label>Update Status / Key Message *</label>
             <input 
               name="update_text"
               type="text" 
@@ -65,7 +66,7 @@ export default function AddUpdateModal({ clientId, issues, onClose, onAdded }) {
           </div>
           
           <div className="form-group">
-            <label style={{ fontSize: '0.85rem', marginBottom: '0.5rem', display: 'block', opacity: 0.8 }}>Meeting Notes</label>
+            <label>Meeting Notes</label>
             <textarea 
               name="meeting_notes"
               rows="3" 
@@ -76,7 +77,7 @@ export default function AddUpdateModal({ clientId, issues, onClose, onAdded }) {
           </div>
 
           <div className="form-group">
-            <label style={{ fontSize: '0.85rem', marginBottom: '0.5rem', display: 'block', opacity: 0.8 }}>Next Action</label>
+            <label>Next Action</label>
             <input 
               name="next_action"
               type="text" 
@@ -88,7 +89,7 @@ export default function AddUpdateModal({ clientId, issues, onClose, onAdded }) {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
             <div className="form-group">
-              <label style={{ fontSize: '0.85rem', marginBottom: '0.5rem', display: 'block', opacity: 0.8 }}>Link to Issue</label>
+              <label>Link to Issue</label>
               <select 
                 name="issue_id"
                 value={formData.issue_id} 
@@ -105,7 +106,7 @@ export default function AddUpdateModal({ clientId, issues, onClose, onAdded }) {
             </div>
             
             <div className="form-group">
-              <label style={{ fontSize: '0.85rem', marginBottom: '0.5rem', display: 'block', opacity: 0.8 }}>Responsible Person</label>
+              <label>Responsible Person</label>
               <input 
                 name="responsible_person"
                 type="text" 

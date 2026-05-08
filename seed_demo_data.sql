@@ -2,11 +2,11 @@
 -- TRUNCATE clients, updates, issues RESTART IDENTITY CASCADE;
 
 -- 1. ADD REALISTIC PROJECTS
-INSERT INTO clients (name, description, status) VALUES
-('E-Commerce App Redesign', 'Revamping the core checkout flow and product listing pages for improved conversion.', 'on-track'),
-('Payment Gateway Integration', 'Integrating Razorpay and Stripe for seamless international transactions.', 'blocked'),
-('Mobile App v2.0', 'Developing the React Native version of the client portal with push notifications.', 'waiting'),
-('Cloud Migration', 'Moving legacy on-premise servers to AWS with auto-scaling infrastructure.', 'on-track');
+INSERT INTO clients (name, description, status, deadline, links) VALUES
+('E-Commerce App Redesign', 'Revamping the core checkout flow and product listing pages for improved conversion.', 'on-track', CURRENT_DATE + INTERVAL '14 days', '{"figma": "https://figma.com/example", "staging": "https://staging.example.com"}'),
+('Payment Gateway Integration', 'Integrating Razorpay and Stripe for seamless international transactions.', 'blocked', CURRENT_DATE + INTERVAL '5 days', '{}'),
+('Mobile App v2.0', 'Developing the React Native version of the client portal with push notifications.', 'waiting', CURRENT_DATE + INTERVAL '30 days', '{"docs": "https://notion.so/docs"}'),
+('Cloud Migration', 'Moving legacy on-premise servers to AWS with auto-scaling infrastructure.', 'on-track', CURRENT_DATE + INTERVAL '60 days', '{}');
 
 -- 2. ADD REALISTIC UPDATES (Include Next Actions)
 INSERT INTO updates (client_id, update_text, next_action, responsible_person) VALUES

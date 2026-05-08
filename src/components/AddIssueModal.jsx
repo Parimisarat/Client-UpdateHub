@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-export default function AddIssueModal({ clientId, onClose, onAdded }) {
+export default function AddIssueModal({ clientId, onClose, onAdded, showToast }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -24,7 +24,8 @@ export default function AddIssueModal({ clientId, onClose, onAdded }) {
       }]);
 
     if (error) {
-      alert('Error adding issue: ' + error.message);
+      if (showToast) showToast('Error adding issue: ' + error.message, 'error');
+      else alert('Error adding issue: ' + error.message);
       setLoading(false);
     } else {
       onAdded();
@@ -71,7 +72,7 @@ export default function AddIssueModal({ clientId, onClose, onAdded }) {
               placeholder="Detailed explanation of the problem..."
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
             <div className="form-group">
               <label>Status</label>
               <select 
@@ -96,9 +97,9 @@ export default function AddIssueModal({ clientId, onClose, onAdded }) {
               />
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-            <button type="button" onClick={onClose} className="btn btn-secondary" style={{ flex: 1 }}>Cancel</button>
-            <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading}>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+            <button type="button" onClick={onClose} className="btn btn-secondary" style={{ flex: 1, padding: '0.8rem' }}>Cancel</button>
+            <button type="submit" className="btn btn-primary" style={{ flex: 1, padding: '0.8rem' }} disabled={loading}>
               {loading ? 'Creating...' : 'Create Issue'}
             </button>
           </div>

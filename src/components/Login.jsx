@@ -9,8 +9,8 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState('');
 
   const users = [
-    { username: 'admin', password: 'admin123', name: 'Admin User' },
-    { username: 'karthik', password: '1234', name: 'Karthik' }
+    { username: 'admin', password: 'admin123', name: 'Admin User', role: 'admin' },
+    { username: 'karthik', password: '1234', name: 'Karthik', role: 'member' }
   ];
 
   const handleSubmit = (e) => {

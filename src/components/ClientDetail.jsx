@@ -148,34 +148,38 @@ export default function ClientDetail({ user, onRefresh, showToast }) {
         <div style={{ position: 'absolute', top: '-50%', left: '-20%', width: '100%', height: '200%', background: 'radial-gradient(circle, rgba(56, 189, 248, 0.05) 0%, transparent 70%)', zIndex: 0 }}></div>
 
         <div style={{ position: 'relative', zIndex: 1, flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '1rem' }}>
-            <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: '800', letterSpacing: '-0.03em' }}>{client.name}</h1>
-            <span className={`status-tag status-${client.status}`} style={{ fontSize: '0.75rem', padding: '0.4rem 1rem', borderRadius: '30px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {client.status?.replace('-', ' ')}
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            <h1 style={{ margin: 0, fontSize: '3.5rem', fontWeight: '900', letterSpacing: '-0.04em', lineHeight: 1 }}>{client.name}</h1>
             <button 
               onClick={() => setShowEditModal(true)}
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.4rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.6rem', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start', marginTop: '0.5rem' }}
               title="Edit Project Details"
             >
-              <Edit2 size={16} />
+              <Edit2 size={18} />
             </button>
           </div>
-          <p style={{ fontSize: '1.15rem', color: 'var(--text-secondary)', maxWidth: '600px', lineHeight: '1.6', margin: 0 }}>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem' }}>
+            <span className={`status-tag status-${client.status}`} style={{ fontSize: '0.8rem', padding: '0.5rem 1.25rem', borderRadius: '30px', fontWeight: '700' }}>
+              <span className={`pulse-dot dot-${client.status}`} style={{ marginRight: '8px' }}></span>
+              {client.status?.replace('-', ' ')}
+            </span>
+            {client.deadline && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                <Calendar size={16} />
+                <span>Deadline: <strong style={{ color: 'var(--text-primary)' }}>{format(new Date(client.deadline), 'MMMM d, yyyy')}</strong></span>
+              </div>
+            )}
+          </div>
+
+          <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '800px', lineHeight: '1.6', margin: 0, fontWeight: '400' }}>
             {client.description}
           </p>
           
           {updates[0]?.next_action && (
-            <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ padding: '0.5rem 1rem', background: 'rgba(56, 189, 248, 0.1)', borderRadius: '8px', color: 'var(--accent-color)', fontSize: '0.75rem', fontWeight: '800' }}>NEXT STEP</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: '500' }}>{updates[0].next_action}</div>
-            </div>
-          )}
-
-          {client.deadline && (
-            <div style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)' }}>
-              <Calendar size={16} />
-              <span style={{ fontSize: '0.95rem' }}>Deadline: <strong style={{ color: 'var(--accent-color)' }}>{format(new Date(client.deadline), 'MMMM d, yyyy')}</strong></span>
+            <div style={{ marginTop: '2.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+              <div style={{ padding: '0.6rem 1.2rem', background: 'rgba(56, 189, 248, 0.1)', borderRadius: '10px', color: 'var(--accent-color)', fontSize: '0.7rem', fontWeight: '900', letterSpacing: '0.1em' }}>NEXT STEP</div>
+              <div style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--text-primary)' }}>{updates[0].next_action}</div>
             </div>
           )}
         </div>
@@ -206,15 +210,16 @@ export default function ClientDetail({ user, onRefresh, showToast }) {
       </div>
 
       {/* NAVIGATION TABS */}
-      <div className="tabs-container">
-        <div style={{ display: 'flex', gap: '2.5rem' }}>
-          <div className={`tab ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>Overview</div>
-          <div className={`tab ${activeTab === 'updates' ? 'active' : ''}`} onClick={() => setActiveTab('updates')}>Updates ({updates.length})</div>
-          <div className={`tab ${activeTab === 'issues' ? 'active' : ''}`} onClick={() => setActiveTab('issues')}>Issues ({issues.length})</div>
+      <div className="tabs-container" style={{ marginBottom: '3.5rem' }}>
+        <div style={{ display: 'flex', gap: '3rem' }}>
+          <div className={`tab ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')} style={{ fontSize: '1rem', paddingBottom: '1.25rem' }}>Overview</div>
+          <div className={`tab ${activeTab === 'updates' ? 'active' : ''}`} onClick={() => setActiveTab('updates')} style={{ fontSize: '1rem', paddingBottom: '1.25rem' }}>Updates ({updates.length})</div>
+          <div className={`tab ${activeTab === 'issues' ? 'active' : ''}`} onClick={() => setActiveTab('issues')} style={{ fontSize: '1rem', paddingBottom: '1.25rem' }}>Issues ({issues.length})</div>
         </div>
         <button 
           onClick={() => activeTab === 'issues' ? setShowIssueModal(true) : setShowUpdateModal(true)} 
           className="btn btn-primary"
+          style={{ padding: '0.8rem 1.5rem' }}
           disabled={(user.role || 'admin') !== 'admin' && activeTab === 'issues'}
         >
           <Plus size={18} /> Add {activeTab === 'issues' ? 'Issue' : 'Update'}
@@ -341,8 +346,13 @@ export default function ClientDetail({ user, onRefresh, showToast }) {
       ) : activeTab === 'updates' ? (
         <div className="timeline">
           {updates.length === 0 ? (
-            <div className="update-card" style={{ textAlign: 'center', padding: '3rem' }}>
-              <p>No updates yet. Add the first one!</p>
+            <div className="update-card" style={{ textAlign: 'center', padding: '5rem 3rem', background: 'rgba(255,255,255,0.02)', borderStyle: 'dashed' }}>
+              <div style={{ width: '60px', height: '60px', borderRadius: '20px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                <MessageSquare size={24} color="var(--text-secondary)" />
+              </div>
+              <h3 style={{ marginBottom: '0.5rem' }}>No updates yet</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Keep your client informed by posting the first status update.</p>
+              <button onClick={() => setShowUpdateModal(true)} className="btn btn-primary" style={{ marginTop: '1.5rem', padding: '0.6rem 1.2rem' }}>Post First Update</button>
             </div>
           ) : (
             updates.map((update) => (
@@ -401,8 +411,12 @@ export default function ClientDetail({ user, onRefresh, showToast }) {
       ) : (
         <div className="issues-list">
           {issues.length === 0 ? (
-            <div className="issue-card" style={{ textAlign: 'center', padding: '3rem' }}>
-              <p>No issues reported yet. Good job!</p>
+            <div className="issue-card" style={{ textAlign: 'center', padding: '5rem 3rem', background: 'rgba(255,255,255,0.02)', borderStyle: 'dashed' }}>
+              <div style={{ width: '60px', height: '60px', borderRadius: '20px', background: 'rgba(16, 185, 129, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                <CheckCircle size={24} color="var(--status-on-track)" />
+              </div>
+              <h3 style={{ marginBottom: '0.5rem' }}>No open issues</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Everything is running smoothly! Any new problems will appear here.</p>
             </div>
           ) : (
             issues.map((issue) => (

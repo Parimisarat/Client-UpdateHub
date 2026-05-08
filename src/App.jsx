@@ -105,28 +105,25 @@ function App() {
               </Link>
             </div>
 
-            <div className="sidebar-section">
-              <h4 className="sidebar-title">Analytics</h4>
-              <div className="stat-row">
-                <span className="stat-label">Total Projects</span>
-                <span className="stat-num">{stats.total}</span>
+            <div className="sidebar-section" style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h4 className="sidebar-title" style={{ margin: 0 }}>System Health</h4>
+                <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>LIVE</div>
               </div>
-              <div className="stat-row">
-                <span className="stat-label">On Track</span>
-                <span className="stat-num" style={{ color: 'var(--success)' }}>{stats.active}</span>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem' }}>
+                <div style={{ flex: 1, textAlign: 'center', padding: '0.5rem', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--status-on-track)' }}>{stats.active}</div>
+                  <div style={{ fontSize: '0.5rem', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Track</div>
+                </div>
+                <div style={{ flex: 1, textAlign: 'center', padding: '0.5rem', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--status-blocked)' }}>{stats.blocked}</div>
+                  <div style={{ fontSize: '0.5rem', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Blocked</div>
+                </div>
               </div>
-              <div className="stat-row">
-                <span className="stat-label">Blocked</span>
-                <span className="stat-num" style={{ color: '#ef4444' }}>{stats.blocked}</span>
-              </div>
-            </div>
-
-            <div className="sidebar-section">
-              <h4 className="sidebar-title">Status Key</h4>
-              <div className="legend-grid">
-                <div className="legend-pill"><span className="dot dot-track"></span> Track</div>
-                <div className="legend-pill"><span className="dot dot-risk"></span> Risk</div>
-                <div className="legend-pill"><span className="dot dot-blocked"></span> Blocked</div>
+              <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden', display: 'flex' }}>
+                <div style={{ width: `${(stats.active / (stats.total || 1)) * 100}%`, background: 'var(--status-on-track)' }}></div>
+                <div style={{ width: `${((stats.total - stats.active - stats.blocked) / (stats.total || 1)) * 100}%`, background: 'var(--status-waiting)' }}></div>
+                <div style={{ width: `${(stats.blocked / (stats.total || 1)) * 100}%`, background: 'var(--status-blocked)' }}></div>
               </div>
             </div>
           </nav>
@@ -300,64 +297,81 @@ function ClientCard({ client, user, onRefresh, showToast }) {
   const progress = issues.length > 0 ? Math.round((closedIssues / issues.length) * 100) : 100;
 
   return (
-    <div className="client-card" onClick={() => navigate(`/client/${client.id}`)}>
+    <div className={`client-card ${client.status}`} onClick={() => navigate(`/client/${client.id}`)}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
         <div>
-          <h3 className="client-name">{client.name}</h3>
-          <p className="client-desc" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>{client.description?.substring(0, 40)}...</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <span className={`pulse-dot dot-${client.status}`}></span>
+            <h3 className="client-name" style={{ margin: 0 }}>{client.name}</h3>
+          </div>
+          <p className="client-desc" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>{client.description?.substring(0, 45)}...</p>
         </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className={`status-tag status-${client.status}`}>
-                {client.status.replace('-', ' ').toUpperCase()}
-              </span>
-              {user.role === 'admin' && (
-                <button 
-                  onClick={(e) => deleteClient(e, client.id)}
-                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', opacity: 0.5 }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = 1}
-                  onMouseLeave={e => e.currentTarget.style.opacity = 0.5}
-                >
-                  <Trash2 size={14} />
-                </button>
-              )}
-            </div>
-            <div style={{ position: 'relative', width: '40px', height: '40px' }}>
-              <svg width="40" height="40" viewBox="0 0 40 40">
-                <circle cx="20" cy="20" r="17" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="3" />
-                <circle cx="20" cy="20" r="17" fill="none" stroke={client.status === 'blocked' ? '#ef4444' : 'var(--success)'} strokeWidth="3" 
-                  strokeDasharray={`${2 * Math.PI * 17}`} 
-                  strokeDashoffset={`${2 * Math.PI * 17 * (1 - (progress / 100))}`}
-                  strokeLinecap="round"
-                />
-              </svg>
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '0.6rem', fontWeight: 'bold' }}>
-                {progress}%
-              </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span className={`status-tag status-${client.status}`} style={{ fontSize: '0.65rem' }}>
+              {client.status.replace('-', ' ')}
+            </span>
+            {user.role === 'admin' && (
+              <button 
+                onClick={(e) => deleteClient(e, client.id)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', opacity: 0.3 }}
+                onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                onMouseLeave={e => e.currentTarget.style.opacity = 0.3}
+              >
+                <Trash2 size={12} />
+              </button>
+            )}
+          </div>
+          <div style={{ position: 'relative', width: '36px', height: '36px' }}>
+            <svg width="36" height="36" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="3" />
+              <circle cx="18" cy="18" r="15" fill="none" stroke={client.status === 'blocked' ? 'var(--status-blocked)' : 'var(--status-on-track)'} strokeWidth="3" 
+                strokeDasharray={`${2 * Math.PI * 15}`} 
+                strokeDashoffset={`${2 * Math.PI * 15 * (1 - (progress / 100))}`}
+                strokeLinecap="round"
+                style={{ transition: 'stroke-dashoffset 1s ease' }}
+              />
+            </svg>
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '0.55rem', fontWeight: '800' }}>
+              {progress}%
             </div>
           </div>
+        </div>
       </div>
       
-      <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '2rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '4rem', lineHeight: '1.6' }}>
+      <div style={{ 
+        background: 'rgba(255,255,255,0.02)', 
+        borderRadius: '12px', 
+        padding: '1rem', 
+        marginBottom: '1.5rem',
+        border: '1px solid rgba(255,255,255,0.03)'
+      }}>
         {latestUpdate ? (
-          <span><MessageSquare size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> {latestUpdate.update_text}</span>
-        ) : (
-          'No updates posted yet.'
-        )}
-      </p>
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
-        <div style={{ display: 'flex', gap: '1.5rem' }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <User size={14} /> {latestUpdate?.responsible_person || 'Admin'}
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <div style={{ padding: '6px', background: 'rgba(56, 189, 248, 0.1)', borderRadius: '6px', height: 'fit-content' }}>
+              <MessageSquare size={12} color="var(--accent-color)" />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Latest Activity</div>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                {latestUpdate.update_text}
+              </p>
+            </div>
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <CheckCircle size={14} /> {openIssues.length} Issues
+        ) : (
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, textAlign: 'center', fontStyle: 'italic' }}>No activity yet.</p>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: 0.6 }}>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <div style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <CheckCircle size={12} /> {openIssues.length} Issues
           </div>
         </div>
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.7 }}>
-          <Calendar size={12} style={{ marginRight: '4px' }} />
-          {client.deadline ? new Date(client.deadline).toLocaleDateString() : 'Never'}
+        <div style={{ fontSize: '0.7rem' }}>
+          <Calendar size={11} style={{ marginRight: '4px' }} />
+          {client.deadline ? new Date(client.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'No deadline'}
         </div>
       </div>
     </div>

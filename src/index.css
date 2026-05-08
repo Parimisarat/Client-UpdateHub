@@ -13,6 +13,14 @@
   --glass-bg: rgba(15, 23, 42, 0.8);
   --font-family: 'Inter', sans-serif;
   color-scheme: dark;
+
+  /* Status Colors */
+  --status-on-track: #10b981;
+  --status-waiting: #f59e0b;
+  --status-blocked: #ef4444;
+  --status-on-track-bg: rgba(16, 185, 129, 0.1);
+  --status-waiting-bg: rgba(245, 158, 11, 0.1);
+  --status-blocked-bg: rgba(239, 68, 68, 0.1);
 }
 
 
@@ -163,6 +171,10 @@ p { color: var(--text-secondary); line-height: 1.6; }
   box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px var(--accent-glow);
 }
 
+.client-card.on-track:hover { border-color: var(--status-on-track); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(16, 185, 129, 0.2); }
+.client-card.waiting:hover { border-color: var(--status-waiting); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(245, 158, 11, 0.2); }
+.client-card.blocked:hover { border-color: var(--status-blocked); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(239, 68, 68, 0.2); }
+
 .client-card::before {
   content: '';
   position: absolute;
@@ -217,9 +229,42 @@ p { color: var(--text-secondary); line-height: 1.6; }
   overflow: hidden;
 }
 
-.status-on-track { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
-.status-waiting { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-.status-blocked { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+.status-on-track { background: var(--status-on-track-bg); color: var(--status-on-track); border: 1px solid rgba(16, 185, 129, 0.2); }
+.status-waiting { background: var(--status-waiting-bg); color: var(--status-waiting); border: 1px solid rgba(245, 158, 11, 0.2); }
+.status-blocked { background: var(--status-blocked-bg); color: var(--status-blocked); border: 1px solid rgba(239, 68, 68, 0.2); }
+
+/* Pulsing Status Dot */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  position: relative;
+}
+
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  background: inherit;
+  opacity: 0.6;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  70% { transform: scale(2.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+.dot-on-track { background-color: var(--status-on-track); box-shadow: 0 0 10px var(--status-on-track); }
+.dot-waiting { background-color: var(--status-waiting); box-shadow: 0 0 10px var(--status-waiting); }
+.dot-blocked { background-color: var(--status-blocked); box-shadow: 0 0 10px var(--status-blocked); }
 
 /* Timeline */
 .timeline {
@@ -572,4 +617,32 @@ p { color: var(--text-secondary); line-height: 1.6; }
   opacity: 0.4;
   pointer-events: none;
   filter: grayscale(1);
+}
+
+/* Card Update Flash */
+@keyframes flashUpdate {
+  0% { border-color: var(--accent-color); box-shadow: 0 0 20px var(--accent-glow); }
+  100% { border-color: var(--border-color); box-shadow: none; }
+}
+
+.flash-update {
+  animation: flashUpdate 1s ease-out;
+}
+
+/* Scrollbar Polish */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }
